@@ -1,26 +1,26 @@
-#define NVIC_INT_CTRL       0xE000ED04     //NVIC´¥·¢PendSVC¼Ä´æÆ÷
+#define NVIC_INT_CTRL       0xE000ED04     //NVICè§¦å‘PendSVCå¯„å­˜å™¨
 #define NVIC_PENDSVSET      0x10000000
 #define NVIC_SYSPRI2        0xE000ED22
 #define NVIC_PENDSV_PRT     0x000000FF
 
-#define MEM32(addr)         *(volatile unsigned long *)(addr)  //Ğ´¼Ä´æÆ÷µÄºê,volatile¹Ø¼ü×Ö²»±»±àÒëÆ÷ÓÅ»¯
+#define MEM32(addr)         *(volatile unsigned long *)(addr)  //å†™å¯„å­˜å™¨çš„å®,volatileå…³é”®å­—ä¸è¢«ç¼–è¯‘å™¨ä¼˜åŒ–
 #define MEM8(addr)          *(volatile unsigned char *)(addr)
 
 /******************************************************************************
- * º¯ÊıÃû³Æ£ºPendSVCÒì³£´¥·¢º¯Êı
- * º¯Êı¹¦ÄÜ£º´¥·¢PendSVCÒì³£
- * ÊäÈë²ÎÊı£ºÎŞ
- * Êä³ö²ÎÊı£ºÎŞ 
+ * å‡½æ•°åç§°ï¼šPendSVCå¼‚å¸¸è§¦å‘å‡½æ•°
+ * å‡½æ•°åŠŸèƒ½ï¼šè§¦å‘PendSVCå¼‚å¸¸
+ * è¾“å…¥å‚æ•°ï¼šæ— 
+ * è¾“å‡ºå‚æ•°ï¼šæ—  
  ******************************************************************************/
 void triggerPendSVC (void)
 {
-	MEM8(NVIC_SYSPRI2) = NVIC_PENDSV_PRT; //ÉèÖÃPendSVCÒì³£ÓÅÏÈ¼¶Îª×îµÍ
-	MEM32(NVIC_INT_CTRL) = NVIC_PENDSVSET;//´¥·¢PendSVCÒì³£
+	MEM8(NVIC_SYSPRI2) = NVIC_PENDSV_PRT; //è®¾ç½®PendSVCå¼‚å¸¸ä¼˜å…ˆçº§ä¸ºæœ€ä½
+	MEM32(NVIC_INT_CTRL) = NVIC_PENDSVSET;//è§¦å‘PendSVCå¼‚å¸¸
 }
 
-typedef struct _BlockType_t       //¶¨ÒåÒ»¸ö½á¹¹
+typedef struct _BlockType_t       //å®šä¹‰ä¸€ä¸ªç»“æ„
 {
-	unsigned long * stackPtr;     //¶ÑÕ»Ö¸Õë
+	unsigned long * stackPtr;     //å †æ ˆæŒ‡é’ˆ
 }BlockType_t;
 
 BlockType_t * blockPtr;    
@@ -28,10 +28,10 @@ BlockType_t * blockPtr;
 
 
 /******************************************************************************
- * º¯ÊıÃû³Æ£º¼òµ¥ÑÓÊ±º¯Êı
- * º¯Êı¹¦ÄÜ£ºÑÓÊ±
- * ÊäÈë²ÎÊı£ºÑÓÊ±Ê±¼ä
- * Êä³ö²ÎÊı£ºÎŞ 
+ * å‡½æ•°åç§°ï¼šç®€å•å»¶æ—¶å‡½æ•°
+ * å‡½æ•°åŠŸèƒ½ï¼šå»¶æ—¶
+ * è¾“å…¥å‚æ•°ï¼šå»¶æ—¶æ—¶é—´
+ * è¾“å‡ºå‚æ•°ï¼šæ—  
  ******************************************************************************/
 void delay(int count)
 {
@@ -40,18 +40,18 @@ void delay(int count)
 
 int flag;
 
-unsigned long stackBuffer[1024];//¶¨ÒåÒ»¸ö»º³åÇø
+unsigned long stackBuffer[1024];//å®šä¹‰ä¸€ä¸ªç¼“å†²åŒº
 BlockType_t block;
 
 /******************************************************************************
- * º¯ÊıÃû³Æ£ºÖ÷º¯Êı
- * º¯Êı¹¦ÄÜ£º
- * ÊäÈë²ÎÊı£ºÎŞ
- * Êä³ö²ÎÊı£ºÎŞ 
+ * å‡½æ•°åç§°ï¼šä¸»å‡½æ•°
+ * å‡½æ•°åŠŸèƒ½ï¼š
+ * è¾“å…¥å‚æ•°ï¼šæ— 
+ * è¾“å‡ºå‚æ•°ï¼šæ—  
  ******************************************************************************/
 int main()
 {
-	block.stackPtr = &stackBuffer[1024]; //½á¹¹³õÊ¼»¯,Ö¸Ïò×îºóÒ»¸öµ¥Ôª
+	block.stackPtr = &stackBuffer[1024]; //ç»“æ„åˆå§‹åŒ–,æŒ‡å‘æœ€åä¸€ä¸ªå•å…ƒ
 	blockPtr = &block;
 	for(;;)
 	{
@@ -60,7 +60,7 @@ int main()
 		flag = 1;
 		delay(100);
 		
-		triggerPendSVC ();  //µ÷ÓÃPendSVCÒì³£´¥·¢º¯Êı
+		triggerPendSVC ();  //è°ƒç”¨PendSVCå¼‚å¸¸è§¦å‘å‡½æ•°
 	}
 }	
 
