@@ -1,4 +1,5 @@
 #include "qmRTOS.h"
+#include "ARMCM3.h"
 
 qTask * currentTask;   //指示当前任务的指针
 qTask * nextTask;      //指向下一个任务的指针
@@ -37,7 +38,7 @@ void qTaskInit (qTask * task , void (*entry) (void *), void *param , qTaskStack 
 }
 
 /******************************************************************************
- * 函数名称：调度函数函数
+ * 函数名称：任务调度函数
  * 函数功能：决定cpu在那些任务之间运行，如何分配
  * 输入参数：无
  * 输出参数：无 
@@ -55,6 +56,33 @@ void qTaskSched()
 	qTaskSwitch();                        //调用任务切换函数
 }
 	
+/******************************************************************************
+ * 函数名称：SysTick定时器初始化函数
+ * 函数功能：初始化SysTick定时器
+ * 输入参数：uint32_t ms  定时时间
+ * 输出参数：无 
+ ******************************************************************************/
+void tSetSysTickPeriod (uint32_t ms)
+{
+	SysTick->LOAD = ms * SystemCoreClock / 1000 - 1;
+	NVIC_SetPriority(SysTick_IRQn, (1 << __NVIC_PRIO_BITS) - 1);
+	SysTick->VAL = 0;
+	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk |
+					SysTick_CTRL_TICKINT_Msk |
+					SysTick_CTRL_ENABLE_Msk;
+}
+
+/******************************************************************************
+ * 函数名称：SysTick中断服务函数
+ * 函数功能：SysTick中断服务
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+void SysTick_Handler ()
+{
+	qTaskSched();      //调用调度函数，切换任务
+}
+
 /******************************************************************************
  * 函数名称：简单延时函数
  * 函数功能：延时
@@ -83,14 +111,13 @@ int task2Flag;
  ******************************************************************************/
 void task1Entry (void * param)
 {
+	tSetSysTickPeriod (10);   //初始化系统定时器为10ms
 	for(;;)
 	{
 		task1Flag = 0;
 		delay(100);
 		task1Flag = 1;
 		delay(100);
-		
-		qTaskSched();    //调用调度函数，切换任务
 	}
 }
 
@@ -108,8 +135,6 @@ void task2Entry (void * param)
 		delay(100);
 		task2Flag = 1;
 		delay(100);
-		
-		qTaskSched();    //调用调度函数，切换任务
 	}
 }
 
@@ -129,7 +154,7 @@ int main()
 	
 	nextTask = taskTable[0];   //初始运行任务
 	
-	qTaskRunFirst();           //运行初始任务
+	qTaskRunFirst();           //运行OS，开始调度第一个任务
 	
 	return 0;
 }	

@@ -15,8 +15,8 @@
  * 输入参数：无
  * 输出参数：无 
  ******************************************************************************/
-__asm void PendSV_Handler (void)		//保存内核寄存器必须使用汇编代码，采用内嵌汇编，函数以__asm开头
-{										//注意函数名称必须是PendSV_Handler
+__asm void PendSV_Handler (void)	  //保存内核寄存器必须使用汇编代码，采用内嵌汇编，函数以__asm开头
+{									  //注意函数名称必须是PendSV_Handler
 	IMPORT  currentTask               // 使用import导入C文件中声明的全局变量
     IMPORT  nextTask                  // 类似于在C文文件中使用extern int variable
     
@@ -46,13 +46,13 @@ PendSVHandler_nosave                  // 无论是tTaskSwitch和tTaskSwitch触�
 
 /******************************************************************************
  * 函数名称：初始任务运行函数
- * 函数功能：运行初始任务
+ * 函数功能：运行OS，开始调度第一个任务
  * 输入参数：无
  * 输出参数：无 
  ******************************************************************************/
 void qTaskRunFirst()
 {
-	__set_PSP(0);      //PSP赋值为0，在ARMCM3.h实现
+	__set_PSP(0);      //PSP标志赋值为0，在ARMCM3.h实现
 	
 	MEM8(NVIC_SYSPRI2) = NVIC_PENDSV_PRT; //设置PendSVC异常优先级为最低
 	MEM32(NVIC_INT_CTRL) = NVIC_PENDSVSET;//触发PendSVC异常
