@@ -7,6 +7,7 @@ typedef uint32_t qTaskStack;       //堆栈单元类型
 
 typedef struct _qTask {            //任务结构
 	qTaskStack * stack;            //任务堆栈指针
+	uint32_t delayTicks;           //任务延时个数
 }qTask;
 
 extern qTask * currentTask;   
