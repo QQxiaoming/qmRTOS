@@ -15,4 +15,8 @@ extern qTask * nextTask;
 
 void qTaskRunFirst (void);
 void qTaskSwitch (void);
+
+uint32_t qTaskEnterCritical(void);
+void qTaskExitCritical(uint32_t status);
+
 #endif

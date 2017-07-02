@@ -47,6 +47,8 @@ void qTaskInit(qTask * task , void (*entry) (void *), void *param , qTaskStack *
  ******************************************************************************/
 void qTaskSched()
 {
+	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
+	
 	// 空闲任务只有在所有其它任务都不是延时状态时才执行
     // 所以，我们先检查下当前任务是否是空闲任务
     if (currentTask == idleTask) 
@@ -104,6 +106,8 @@ void qTaskSched()
     }
     
 	qTaskSwitch();                        //调用任务切换函数
+	
+	qTaskExitCritical(status);
 }
 	
 /******************************************************************************
@@ -115,6 +119,9 @@ void qTaskSched()
 void qTaskSystemTickHandler()
 {
 	int i;
+	
+	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
+	
 	for(i = 0; i < 2; i ++)          //扫描任务的delayTicks，使其递减1
 	{
 		if(taskTable[i]->delayTicks > 0)
@@ -122,6 +129,8 @@ void qTaskSystemTickHandler()
 			taskTable[i]->delayTicks --;
 		}
 	}
+	
+	qTaskExitCritical(status);
 	
 	qTaskSched();                    //调用任务调度函数
 }
@@ -134,8 +143,12 @@ void qTaskSystemTickHandler()
  ******************************************************************************/
 void qTaskDelay(uint32_t delay)
 {
+	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
+	
 	currentTask->delayTicks = delay;
 	qTaskSched();                    //调用任务调度函数
+	
+	qTaskExitCritical(status);
 }
 
 /******************************************************************************
@@ -144,7 +157,7 @@ void qTaskDelay(uint32_t delay)
  * 输入参数：uint32_t ms  定时时间
  * 输出参数：无 
  ******************************************************************************/
-void tSetSysTickPeriod(uint32_t ms)
+void qSetSysTickPeriod(uint32_t ms)
 {
 	SysTick->LOAD = ms * SystemCoreClock / 1000 - 1;
 	NVIC_SetPriority(SysTick_IRQn, (1 << __NVIC_PRIO_BITS) - 1);
@@ -188,7 +201,7 @@ int task2Flag;
  ******************************************************************************/
 void task1Entry(void * param)
 {
-	tSetSysTickPeriod (10);   //初始化系统定时器为10ms
+	qSetSysTickPeriod (10);   //初始化系统定时器为10ms
 	for(;;)
 	{
 		task1Flag = 0;
@@ -251,7 +264,7 @@ int main()
 	taskTable[0] = &qTask1;    //初始化任务数组
 	taskTable[1] = &qTask2;
 	
-	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, &idleTaskEnv[1024]);
+	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, &idleTaskEnv[1024]);  //初始化空闲任务
 	idleTask = &qTaskIdle;
 	
 	nextTask = taskTable[0];   //初始运行任务
