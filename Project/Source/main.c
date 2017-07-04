@@ -4,7 +4,12 @@
 qTask * currentTask;   //指示当前任务的指针
 qTask * nextTask;      //指向下一个任务的指针
 qTask * idleTask;      //指向空闲任务的指针
-qTask * taskTable[2];  //任务数组大小
+
+qBitmap taskPrioBitmap;// 任务优先级的标记位置结构
+
+qTask * taskTable[QMRTOS_PRO_COUNT];  //任务列表
+
+uint8_t schedLockCount;//调度锁计数器 
 
 /******************************************************************************
  * 函数名称：任务初始化函数
@@ -12,10 +17,11 @@ qTask * taskTable[2];  //任务数组大小
  * 输入参数：qTask * task             任务结构指针
 			void (*entry) (void *)   任务入口函数地址
 			void *parm               传递给任务的参数地址
+			uint32_t prio            任务优先级
 			qTaskStack * stack       任务堆栈地址
  * 输出参数：无 
  ******************************************************************************/
-void qTaskInit(qTask * task , void (*entry) (void *), void *param , qTaskStack * stack )
+void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio, qTaskStack * stack )
 {
 	//堆栈内容初始化，传递末端的地址，内核按满递减方式增长。
 	*(--stack) = (unsigned long)(1 << 24);              // XPSR, 设置了Thumb模式，恢复到Thumb状态而非ARM状态运行
@@ -37,6 +43,72 @@ void qTaskInit(qTask * task , void (*entry) (void *), void *param , qTaskStack *
 	
 	task->stack = stack;                                // 保存最终的值
 	task->delayTicks = 0;								// 初始任务延时个数为0
+
+	task->prio = prio;                                  // 设置任务的优先级
+    taskTable[prio] = task;                             // 填入任务优先级表
+    qBitmapSet(&taskPrioBitmap, prio);                  // 标记优先级位置中的相应位
+}
+
+/******************************************************************************
+ * 函数名称：查询当前就绪的优先级最高任务函数
+ * 函数功能：获取当前最高优先级且可运行的任务
+ * 输入参数：无
+ * 输出参数：优先级最高的且可运行的任务指针
+ ******************************************************************************/
+qTask * qTaskHighestReady (void) 
+{
+    uint32_t highestPrio = qBitmapGetFirstSet(&taskPrioBitmap);
+    return taskTable[highestPrio];
+}
+
+/******************************************************************************
+ * 函数名称：内核初始化函数
+ * 函数功能：初始化OS
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskSchedInit(void)
+{
+	schedLockCount = 0;                                //初始化调度锁计数器为0
+}
+
+/******************************************************************************
+ * 函数名称：调度锁上锁函数
+ * 函数功能：禁止任务调度
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskSchedDisable(void)
+{
+	uint32_t status = qTaskEnterCritical();             //临界区保护
+	
+	if(schedLockCount < 255)                            //调度锁计数器加1，即锁定任务调度
+	{
+		schedLockCount++;
+	}
+	
+	qTaskExitCritical(status);
+}
+
+/******************************************************************************
+ * 函数名称：调度锁解锁函数
+ * 函数功能：允许任务调度
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskSchedEnable(void) 
+{
+    uint32_t status = qTaskEnterCritical();      //临界区保护
+
+    if (schedLockCount > 0) 
+    {
+        if (--schedLockCount == 0) 
+        {
+            qTaskSched(); 
+        }
+    }
+
+    qTaskExitCritical(status);
 }
 
 /******************************************************************************
@@ -45,69 +117,26 @@ void qTaskInit(qTask * task , void (*entry) (void *), void *param , qTaskStack *
  * 输入参数：无
  * 输出参数：无 
  ******************************************************************************/
-void qTaskSched()
+void qTaskSched(void)
 {
+	qTask * tempTask;
+	
 	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
-	
-	// 空闲任务只有在所有其它任务都不是延时状态时才执行
-    // 所以，我们先检查下当前任务是否是空闲任务
-    if (currentTask == idleTask) 
+		
+    if (schedLockCount > 0)                          // 若调度器已经被上锁，则不进行调度，直接退出
     {
-        // 如果是的话，那么去执行task1或者task2中的任意一个
-        // 当然，如果某个任务还在延时状态，那么就不应该切换到他。
-        // 如果所有任务都在延时，那么就继续运行空闲任务，不进行任何切换了
-        if (taskTable[0]->delayTicks == 0) 
-        {
-            nextTask = taskTable[0];
-        }           
-        else if (taskTable[1]->delayTicks == 0) 
-        {
-            nextTask = taskTable[1];
-        } else 
-        {
-            return;
-        }
-    } 
-    else 
-    {
-        // 如果是task1或者task2的话，检查下另外一个任务
-        // 如果另外的任务不在延时中，就切换到该任务
-        // 否则，判断下当前任务是否应该进入延时状态，如果是的话，就切换到空闲任务。否则就不进行任何切换
-        if (currentTask == taskTable[0]) 
-        {
-            if (taskTable[1]->delayTicks == 0) 
-            {
-                nextTask = taskTable[1];
-            }
-            else if (currentTask->delayTicks != 0) 
-            {
-                nextTask = idleTask;
-            } 
-            else 
-            {
-                return;
-            }
-        }
-        else if (currentTask == taskTable[1]) 
-        {
-            if (taskTable[0]->delayTicks == 0) 
-            {
-                nextTask = taskTable[0];
-            }
-            else if (currentTask->delayTicks != 0) 
-            {
-                nextTask = idleTask;
-            }
-            else 
-            {
-                return;
-            }
-        }
+        qTaskExitCritical(status);
+        return;
     }
-    
-	qTaskSwitch();                        //调用任务切换函数
-	
-	qTaskExitCritical(status);
+    // 找到优先级最高的任务，如果其优先级比当前任务的还高，那么就切换到这个任务
+    tempTask = qTaskHighestReady();
+    if (tempTask != currentTask) 
+    {
+        nextTask = tempTask;
+        qTaskSwitch();   
+    }
+
+    qTaskExitCritical(status);                       // 退出临界区
 }
 	
 /******************************************************************************
@@ -122,12 +151,16 @@ void qTaskSystemTickHandler()
 	
 	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
 	
-	for(i = 0; i < 2; i ++)          //扫描任务的delayTicks，使其递减1
+	for(i = 0; i < QMRTOS_PRO_COUNT; i ++)          //扫描任务的delayTicks，使其递减1
 	{
 		if(taskTable[i]->delayTicks > 0)
 		{
 			taskTable[i]->delayTicks --;
 		}
+		else 
+        {
+            qBitmapSet(&taskPrioBitmap, i);  //将任务就绪
+        }
 	}
 	
 	qTaskExitCritical(status);
@@ -146,9 +179,13 @@ void qTaskDelay(uint32_t delay)
 	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
 	
 	currentTask->delayTicks = delay;
-	qTaskSched();                    //调用任务调度函数
+	qBitmapClear(&taskPrioBitmap, currentTask->prio);//删除任务列表中就绪标志
 	
 	qTaskExitCritical(status);
+	
+	qTaskSched();                    //调用任务调度函数
+	
+
 }
 
 /******************************************************************************
@@ -258,16 +295,19 @@ qTaskStack task2Env[1024];
  ******************************************************************************/
 int main()
 {
-	qTaskInit(&qTask1, task1Entry, (void *)0x11111111, &tasklEnv[1024]);  //初始化任务
-	qTaskInit(&qTask2, task2Entry, (void *)0x22222222, &task2Env[1024]);
+	qTaskSchedInit();          //初始化系统内核
+	dprintf("TaskInit is Ok!");
+	
+	qTaskInit(&qTask1, task1Entry, (void *)0x11111111, 0, &tasklEnv[1024]);  //初始化任务
+	qTaskInit(&qTask2, task2Entry, (void *)0x22222222, 1, &task2Env[1024]);
 	
 	taskTable[0] = &qTask1;    //初始化任务数组
 	taskTable[1] = &qTask2;
 	
-	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, &idleTaskEnv[1024]);  //初始化空闲任务
+	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, QMRTOS_PRO_COUNT - 1, &idleTaskEnv[1024]);  //初始化空闲任务
 	idleTask = &qTaskIdle;
-	
-	nextTask = taskTable[0];   //初始运行任务
+
+    nextTask = qTaskHighestReady();   //初始自动查找最高优先级的任务运行
 	
 	qTaskRunFirst();           //运行OS，开始调度第一个任务
 	

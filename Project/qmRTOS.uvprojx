@@ -186,7 +186,7 @@
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>1</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -389,6 +389,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\switch.c</FilePath>
             </File>
+            <File>
+              <FileName>qBitmap.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qBitmap.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -398,6 +403,31 @@
               <FileName>qmRTOS.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qmRTOS.h</FilePath>
+            </File>
+            <File>
+              <FileName>qLib.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qLib.h</FilePath>
+            </File>
+            <File>
+              <FileName>qConfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qConfig.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Debug</GroupName>
+          <Files>
+            <File>
+              <FileName>Debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\Debug\Debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>Debug.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\Debug\Debug.h</FilePath>
             </File>
           </Files>
         </Group>
