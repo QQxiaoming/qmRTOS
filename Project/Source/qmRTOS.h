@@ -8,12 +8,17 @@
 
 #include "Debug/Debug.h"
 
+#define QMRTOS_TASK_STATE_RDY        0
+#define QMRTOS_TASK_STATE_DELAYED    1
+
 typedef uint32_t qTaskStack;       //堆栈单元类型
 
 typedef struct _qTask {            //任务结构
 	qTaskStack * stack;            //任务堆栈指针
 	uint32_t delayTicks;           //任务延时个数
+	qNode delayNode;               //任务延时结点
 	uint32_t prio;                 //任务优先级
+	uint32_t state;                //任务状态
 }qTask;
 
 extern qTask * currentTask;   

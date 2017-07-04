@@ -11,6 +11,8 @@ qTask * taskTable[QMRTOS_PRO_COUNT];  //任务列表
 
 uint8_t schedLockCount;//调度锁计数器 
 
+qList qTaskDelayedList; //延时队列
+
 /******************************************************************************
  * 函数名称：任务初始化函数
  * 函数功能：任务初始化
@@ -43,10 +45,13 @@ void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio
 	
 	task->stack = stack;                                // 保存最终的值
 	task->delayTicks = 0;								// 初始任务延时个数为0
-
 	task->prio = prio;                                  // 设置任务的优先级
+	task->state = QMRTOS_TASK_STATE_RDY;                // 设置任务为就绪状态
+	
+	qNodeInit(&(task->delayNode));                      // 初始化延时结点
+	
     taskTable[prio] = task;                             // 填入任务优先级表
-    qBitmapSet(&taskPrioBitmap, prio);                  // 标记优先级位置中的相应位
+    qBitmapSet(&taskPrioBitmap, prio);                  // 置位优先级位置中的相应位
 }
 
 /******************************************************************************
@@ -112,6 +117,31 @@ void qTaskSchedEnable(void)
 }
 
 /******************************************************************************
+ * 函数名称：就绪任务函数
+ * 函数功能：添加任务到任务就绪表
+ * 输入参数：qTask * task    任务指针
+ * 输出参数：无
+ ******************************************************************************/
+void qTaskSchedRdy(qTask * task)
+{
+	taskTable[task->prio] = task;              //将任务填入对应优先级任务列表
+	qBitmapSet(&taskPrioBitmap, task->prio);   //置位位图中优先级位的相应位
+	
+}
+
+/******************************************************************************
+ * 函数名称：非就绪任务函数
+ * 函数功能：删除任务就绪表中任务
+ * 输入参数：qTask * task    任务指针
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskSchedUnRdy(qTask * task)
+{
+	taskTable[task->prio] = (qTask *)0;          //清除任务列表中该优先级处的任务
+	qBitmapClear(&taskPrioBitmap, task->prio);   //清除位图中优先级位的相应位
+}
+
+/******************************************************************************
  * 函数名称：任务调度函数
  * 函数功能：决定cpu在那些任务之间运行，如何分配
  * 输入参数：无
@@ -140,27 +170,63 @@ void qTaskSched(void)
 }
 	
 /******************************************************************************
+ * 函数名称：延时队列初始化函数
+ * 函数功能：调用链表初始化函数对延时队列初始化
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskDelayedInit(void)
+{
+	qListInit(&qTaskDelayedList);                     //初始化延时队列
+}
+
+/******************************************************************************
+ * 函数名称：等待任务函数
+ * 函数功能：将需要延时的任务的结点插入到延时队列
+ * 输入参数：qTask * task     任务指针
+			uint32_t ticks   需要延时的ticks数
+ * 输出参数：无 
+ ******************************************************************************/
+void qTimeTaskWait(qTask * task, uint32_t ticks)
+{
+	task->delayTicks = ticks;                             //延时时间 
+	qListAddLast(&qTaskDelayedList, &(task->delayNode));   //将对应任务插入到延时队列队尾
+	task->state |= QMRTOS_TASK_STATE_DELAYED;             //将任务状态标志位置为延时状态 
+}
+
+/******************************************************************************
+ * 函数名称：唤醒任务函数
+ * 函数功能：将延时结束的任务的结点从延时队列移除
+ * 输入参数：qTask * task     任务指针
+ * 输出参数：无  
+ ******************************************************************************/
+void qTimeTaskWakeUp(qTask * task)
+{
+	qListRemove(&qTaskDelayedList, &(task->delayNode));   //将任务结点移除延时队列
+	task->state &= ~QMRTOS_TASK_STATE_DELAYED;            //将任务状态标志位延时状态取消
+}
+
+
+/******************************************************************************
  * 函数名称：任务SysTick定时器中断函数
  * 函数功能：发生中断时被定时器中断函数调用，使delayTicks--，并调用一次调度函数
  * 输入参数：无
  * 输出参数：无 
  ******************************************************************************/
-void qTaskSystemTickHandler()
+void qTaskSystemTickHandler(void)
 {
-	int i;
+	qNode * node;
 	
 	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
 	
-	for(i = 0; i < QMRTOS_PRO_COUNT; i ++)          //扫描任务的delayTicks，使其递减1
+	for(node = qTaskDelayedList.headNode.nextNode; node != &(qTaskDelayedList.headNode); node = node->nextNode)      //扫描任务延时队列
 	{
-		if(taskTable[i]->delayTicks > 0)
+		qTask * task = qNodeParent(node, qTask, delayNode);   //获取任务的地址
+		if(--task->delayTicks == 0)
 		{
-			taskTable[i]->delayTicks --;
+			qTimeTaskWakeUp(task);                   //从延时队列唤醒任务
+			qTaskSchedRdy(task);                     //就绪任务
 		}
-		else 
-        {
-            qBitmapSet(&taskPrioBitmap, i);  //将任务就绪
-        }
 	}
 	
 	qTaskExitCritical(status);
@@ -178,14 +244,12 @@ void qTaskDelay(uint32_t delay)
 {
 	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
 	
-	currentTask->delayTicks = delay;
-	qBitmapClear(&taskPrioBitmap, currentTask->prio);//删除任务列表中就绪标志
+	qTimeTaskWait(currentTask, delay);               //将任务进入等待
+	qTaskSchedUnRdy(currentTask);                    //关闭任务就绪状态
 	
 	qTaskExitCritical(status);
 	
 	qTaskSched();                    //调用任务调度函数
-	
-
 }
 
 /******************************************************************************
@@ -297,6 +361,8 @@ int main()
 {
 	qTaskSchedInit();          //初始化系统内核
 	dprintf("TaskInit is Ok!");
+	
+	qTaskDelayedInit();        //延时列表初始化
 	
 	qTaskInit(&qTask1, task1Entry, (void *)0x11111111, 0, &tasklEnv[1024]);  //初始化任务
 	qTaskInit(&qTask2, task2Entry, (void *)0x22222222, 1, &task2Env[1024]);

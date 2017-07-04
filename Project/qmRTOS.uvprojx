@@ -394,6 +394,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qBitmap.c</FilePath>
             </File>
+            <File>
+              <FileName>qList.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qList.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
