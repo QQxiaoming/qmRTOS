@@ -7,7 +7,7 @@ qTask * idleTask;      //指向空闲任务的指针
 
 qBitmap taskPrioBitmap;// 任务优先级的标记位置结构
 
-qTask * taskTable[QMRTOS_PRO_COUNT];  //任务列表
+qList taskTable[QMRTOS_PRO_COUNT];  //任务列表
 
 uint8_t schedLockCount;//调度锁计数器 
 
@@ -43,14 +43,16 @@ void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio
     *(--stack) = (unsigned long)0x5;                    // R5, 未用
     *(--stack) = (unsigned long)0x4;                    // R4, 未用
 	
+	task->slice = QMRYOS_SLTIC_MAX;                     // 时间片初始化为最大值
 	task->stack = stack;                                // 保存最终的值
 	task->delayTicks = 0;								// 初始任务延时个数为0
 	task->prio = prio;                                  // 设置任务的优先级
 	task->state = QMRTOS_TASK_STATE_RDY;                // 设置任务为就绪状态
 	
 	qNodeInit(&(task->delayNode));                      // 初始化延时结点
+	qNodeInit(&(task->linkNode));                       // 初始化链接结点
+	qListAddFirst(&taskTable[prio], &task->linkNode);   // 将链接结点加入到优先级链表
 	
-    taskTable[prio] = task;                             // 填入任务优先级表
     qBitmapSet(&taskPrioBitmap, prio);                  // 置位优先级位置中的相应位
 }
 
@@ -62,8 +64,9 @@ void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio
  ******************************************************************************/
 qTask * qTaskHighestReady (void) 
 {
-    uint32_t highestPrio = qBitmapGetFirstSet(&taskPrioBitmap);
-    return taskTable[highestPrio];
+    uint32_t highestPrio = qBitmapGetFirstSet(&taskPrioBitmap);     //找到优先级最高的位
+	qNode * node =qListFirst(&taskTable[highestPrio]);              //找到该优先级下第一个任务结点
+    return qNodeParent(node, qTask, linkNode);                      //找到该任务结点下任务的指针并返回  
 }
 
 /******************************************************************************
@@ -74,7 +77,14 @@ qTask * qTaskHighestReady (void)
  ******************************************************************************/
 void qTaskSchedInit(void)
 {
+	int i;
+	
 	schedLockCount = 0;                                //初始化调度锁计数器为0
+	qBitmapInit(&taskPrioBitmap);                      //初始化位图
+	for(i = 0; i < QMRTOS_PRO_COUNT; i++)
+	{
+		qListInit(&taskTable[i]);                      //扫描任务就绪表并初始化所有链表
+	}
 }
 
 /******************************************************************************
@@ -124,9 +134,8 @@ void qTaskSchedEnable(void)
  ******************************************************************************/
 void qTaskSchedRdy(qTask * task)
 {
-	taskTable[task->prio] = task;              //将任务填入对应优先级任务列表
+	qListAddFirst(&(taskTable[task->prio]), &(task->linkNode));  //向链表中插入任务结点
 	qBitmapSet(&taskPrioBitmap, task->prio);   //置位位图中优先级位的相应位
-	
 }
 
 /******************************************************************************
@@ -137,8 +146,11 @@ void qTaskSchedRdy(qTask * task)
  ******************************************************************************/
 void qTaskSchedUnRdy(qTask * task)
 {
-	taskTable[task->prio] = (qTask *)0;          //清除任务列表中该优先级处的任务
-	qBitmapClear(&taskPrioBitmap, task->prio);   //清除位图中优先级位的相应位
+	qListRemove(&taskTable[task->prio], &(task->linkNode));  //从链表中删除对应任务
+	if(qListCount(&taskTable[task->prio]) == 0)               //判断链表里是否还有任务
+	{
+		qBitmapClear(&taskPrioBitmap, task->prio);   //如果没有任务则清除位图中优先级位的相应位
+	}
 }
 
 /******************************************************************************
@@ -229,6 +241,17 @@ void qTaskSystemTickHandler(void)
 		}
 	}
 	
+	if(--currentTask->slice == 0)                    //判断时间片是否使用完毕
+	{
+		if(qListCount(&taskTable[currentTask->prio]) > 0) //如果使用完毕，判断当前优先级是否还存在任务
+		{
+			qListRemoveFirst(&taskTable[currentTask->prio]);  //如果存在任务，则移除当前任务结点
+			qListAddLast(&taskTable[currentTask->prio], &(currentTask->linkNode));  //添加当前任务结点到最后一个
+			
+			currentTask->slice = QMRYOS_SLTIC_MAX;        //给当前任务重新配备时间片
+		}
+	}
+	
 	qTaskExitCritical(status);
 	
 	qTaskSched();                    //调用任务调度函数
@@ -293,6 +316,7 @@ void delay(int count)
 
 int task1Flag;  //定义任务标志位
 int task2Flag;
+int task3Flag;
 
 /******************************************************************************
  * 函数名称：任务1函数
@@ -323,9 +347,26 @@ void task2Entry(void * param)
 	for(;;)
 	{
 		task2Flag = 0;
-		qTaskDelay(1);
+		delay(0xff);
 		task2Flag = 1;
-		qTaskDelay(1);
+		delay(0xff);
+	}
+}
+
+/******************************************************************************
+ * 函数名称：任务2函数
+ * 函数功能：任务2
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+void task3Entry(void * param)
+{
+	for(;;)
+	{
+		task3Flag = 0;
+		delay(0xff);
+		task3Flag = 1;
+		delay(0xff);
 	}
 }
 
@@ -347,9 +388,11 @@ void idleTaskEntry(void * param)
 
 qTask qTask1;        //定义两个任务
 qTask qTask2;
+qTask qTask3;
 
 qTaskStack tasklEnv[1024];    //定义任务堆栈空间
 qTaskStack task2Env[1024];
+qTaskStack task3Env[1024];
 
 /******************************************************************************
  * 函数名称：主函数
@@ -366,9 +409,7 @@ int main()
 	
 	qTaskInit(&qTask1, task1Entry, (void *)0x11111111, 0, &tasklEnv[1024]);  //初始化任务
 	qTaskInit(&qTask2, task2Entry, (void *)0x22222222, 1, &task2Env[1024]);
-	
-	taskTable[0] = &qTask1;    //初始化任务数组
-	taskTable[1] = &qTask2;
+	qTaskInit(&qTask3, task3Entry, (void *)0x33333333, 1, &task3Env[1024]);
 	
 	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, QMRTOS_PRO_COUNT - 1, &idleTaskEnv[1024]);  //初始化空闲任务
 	idleTask = &qTaskIdle;
