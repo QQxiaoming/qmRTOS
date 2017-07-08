@@ -8,8 +8,9 @@
 
 #include "Debug/Debug.h"
 
-#define QMRTOS_TASK_STATE_RDY        0
-#define QMRTOS_TASK_STATE_DELAYED    1
+#define QMRTOS_TASK_STATE_RDY        0           //就绪状态
+#define QMRTOS_TASK_STATE_DELAYED    (1 << 1)    //延时状态
+#define QMRTOS_TASK_STATE_SUSPEND    (1 << 2)    //挂起状态  
 
 typedef uint32_t qTaskStack;       //堆栈单元类型
 
@@ -21,6 +22,7 @@ typedef struct _qTask {            //任务结构
 	uint32_t prio;                 //任务优先级
 	uint32_t state;                //任务状态
 	uint32_t slice;                //时间片计数器
+	uint32_t suspendCount;         //挂起计数器
 }qTask;
 
 extern qTask * currentTask;   
@@ -44,5 +46,8 @@ void qTaskSystemTickHandler(void);
 void qTaskDelay(uint32_t delay);
 void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio, qTaskStack * stack );
 void qSetSysTickPeriod(uint32_t ms);
+void qInitApp(void);
+void qTaskSuspend(qTask * task);
+void qTaskWakeUp(qTask * task);
 
 #endif /*QMRTOS_H*/

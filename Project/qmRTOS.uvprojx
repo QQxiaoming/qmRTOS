@@ -399,6 +399,26 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qList.c</FilePath>
             </File>
+            <File>
+              <FileName>qTask.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qTask.c</FilePath>
+            </File>
+            <File>
+              <FileName>qTime.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qTime.c</FilePath>
+            </File>
+            <File>
+              <FileName>qCpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qCpu.c</FilePath>
+            </File>
+            <File>
+              <FileName>app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\app.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

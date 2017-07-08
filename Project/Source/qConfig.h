@@ -3,8 +3,8 @@
 
 //OS优先级总数
 #define	QMRTOS_PRO_COUNT				32		
-#define QMRYOS_SLTIC_MAX                10
-
+#define QMRTOS_SLTIC_MAX                10
+#define QMRTOS_IDLETSSK_STACK_SIZE      1024
 
 //启用调试开关
 #define QMRTOS_KERNEL_DEBUG_OUT         1
