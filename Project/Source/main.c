@@ -1,5 +1,4 @@
 #include "qmRTOS.h"
-#include "ARMCM3.h"
 
 qTask * currentTask;   //指示当前任务的指针
 qTask * nextTask;      //指向下一个任务的指针
@@ -112,6 +111,21 @@ void qTaskSchedUnRdy(qTask * task)
 }
 
 /******************************************************************************
+ * 函数名称：将任务从队列移除函数
+ * 函数功能：从队列删除任务
+ * 输入参数：qTask * task    任务指针
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskSchedRemove(qTask * task)
+{
+	qListRemove(&taskTable[task->prio], &(task->linkNode));  //从链表中删除对应任务
+	if(qListCount(&taskTable[task->prio]) == 0)               //判断链表里是否还有任务
+	{
+		qBitmapClear(&taskPrioBitmap, task->prio);   //如果没有任务则清除位图中优先级位的相应位
+	}
+}
+	
+/******************************************************************************
  * 函数名称：任务调度函数
  * 函数功能：决定cpu在那些任务之间运行，如何分配
  * 输入参数：无
@@ -176,6 +190,16 @@ void qTimeTaskWakeUp(qTask * task)
 	task->state &= ~QMRTOS_TASK_STATE_DELAYED;            //将任务状态标志位延时状态取消
 }
 
+/******************************************************************************
+ * 函数名称：从延时队列删除任务函数
+ * 函数功能：将任务从延时队列删除
+ * 输入参数：qTask * task     任务指针
+ * 输出参数：无  
+ ******************************************************************************/
+void qTimeTaskRomove(qTask * task)
+{
+	qListRemove(&qTaskDelayedList, &(task->delayNode));   //将任务结点移除延时队列
+}
 
 /******************************************************************************
  * 函数名称：任务SysTick定时器中断函数
@@ -243,7 +267,7 @@ void idleTaskEntry(void * param)
 int main()
 {
 	qTaskSchedInit();          //初始化系统内核
-	dprintf("TaskInit is Ok!");
+	dprintf("TaskInit is Ok!\n");
 	
 	qTaskDelayedInit();        //延时列表初始化
 	

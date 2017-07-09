@@ -35,7 +35,10 @@ void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio
 	task->delayTicks = 0;								// 初始任务延时个数为0
 	task->prio = prio;                                  // 设置任务的优先级
 	task->state = QMRTOS_TASK_STATE_RDY;                // 设置任务为就绪状态
-	
+	task->suspendCount = 0;                             // 初始挂起计数器为0
+	task->clean = (void (*)(void *))0;                  // 初始清理函数为空
+	task->cleanParam = (void *)0;                            // 初始清理函数的参数为空
+
 	qNodeInit(&(task->delayNode));                      // 初始化延时结点
 	qNodeInit(&(task->linkNode));                       // 初始化链接结点
 	
@@ -87,6 +90,127 @@ void qTaskWakeUp(qTask * task)
 			qTaskSched();                              //进行调度
 		}
 	}
+	
+	qTaskExitCritical(statue);
+}
+
+/******************************************************************************
+ * 函数名称：任务清理回调函数设置函数
+ * 函数功能：设置任务清理回调
+ * 输入参数：qTask * task                  任务结构指针
+			void (*clean)(void * param)   清理回调入口函数
+			void * param                  回调函数参数
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskSetCleanCallFunc(qTask * task, void (*clean)(void * param), void * param)
+{
+	task->clean = clean;        //对任务回调函数设置
+	task->cleanParam = param;   //对参数设置
+}
+
+/******************************************************************************
+ * 函数名称：任务强制删除函数
+ * 函数功能：强制删除任务
+ * 输入参数：qTask * task                  任务结构指针
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskForceDelete(qTask * task)
+{
+	uint32_t statue = qTaskEnterCritical();   //进入临界区
+
+	if(task->state & QMRTOS_TASK_STATE_DELAYED)  //判断任务是否是延时状态
+	{
+		qTimeTaskRomove(task);                   //如果在延时状态，则将其移除延时队列
+	}
+	else if(!(task->state & QMRTOS_TASK_STATE_SUSPEND))  //判断任务是否在挂起状态
+	{
+		qTaskSchedRemove(task);                  //如果不在挂起状态，则将其从优先级任务队列中移除
+	}
+	
+	if(task->clean)              //判断是否有清理回调函数
+	{
+		task->clean(task->cleanParam);            //调用清理函数，注意此处写法
+	}
+	
+	if(currentTask == task)   //判断该任务是否是当前任务
+	{   
+		qTaskSched();        //如果是则进行任务调度
+	}
+	
+	qTaskExitCritical(statue);
+}
+
+/******************************************************************************
+ * 函数名称：任务请求删除函数
+ * 函数功能：设置请求删除标记
+ * 输入参数：qTask * task                  任务结构指针
+ * 输出参数：无 
+ ******************************************************************************/
+void qTaskRequestDelete(qTask * task)
+{
+	uint32_t statue = qTaskEnterCritical();   //进入临界区
+
+	task->requestDeleteFlag = 1;        //设置任务请求删除标记
+	
+	qTaskExitCritical(statue);
+}
+
+/******************************************************************************
+ * 函数名称：检查任务请求删除标记函数
+ * 函数功能：检查任务请求删除标记
+ * 输入参数：无
+ * 输出参数：delete 请求标记 
+ ******************************************************************************/
+uint8_t qTaskIsRequestedDeleted(void)
+{
+	uint8_t delete;
+	
+	uint32_t statue = qTaskEnterCritical();   //进入临界区
+
+	delete = currentTask->requestDeleteFlag;        //返回当前任务请求删除标记
+	
+	qTaskExitCritical(statue);
+	
+	return delete;
+}
+
+/******************************************************************************
+ * 函数名称：任务删除自己函数
+ * 函数功能：删除当前任务
+ * 输入参数：无
+ * 输出参数：无
+ ******************************************************************************/
+void qTaskDeleteSelf(void)
+{
+	uint32_t statue = qTaskEnterCritical();   //进入临界区
+
+	qTaskSchedRemove(currentTask);   //将当然任务移除优先级就绪队列
+	
+	if(currentTask->clean)              //判断是否有清理回调函数
+	{
+		currentTask->clean(currentTask->cleanParam);            //调用清理函数，注意此处写法
+	}
+	
+	qTaskSched();  //调用任务调度函数
+	
+	qTaskExitCritical(statue);
+}
+
+/******************************************************************************
+ * 函数名称：任务状态查询函数
+ * 函数功能：读取当前任务状态
+ * 输入参数：无
+ * 输出参数：无
+ ******************************************************************************/
+void qTaskGetInfo(qTask * task, qTaskInfo * info)
+{
+	uint32_t statue = qTaskEnterCritical();   //进入临界区
+
+	info->delayTicks = task->delayTicks;      //拷贝当前任务状态
+	info->prio = task->prio;
+	info->slice = task->slice;
+	info->state = task->state;
+	info->suspendCount = task->suspendCount;
 	
 	qTaskExitCritical(statue);
 }
