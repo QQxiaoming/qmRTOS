@@ -49,7 +49,6 @@ void task2Entry(void * param)
 		qTaskDelay(1);
 		task2Flag = 1;
 		qTaskDelay(1);
-
 	}
 }
 

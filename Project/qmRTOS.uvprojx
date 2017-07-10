@@ -419,6 +419,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\app.c</FilePath>
             </File>
+            <File>
+              <FileName>qEvent.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qEvent.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -438,6 +443,16 @@
               <FileName>qConfig.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qConfig.h</FilePath>
+            </File>
+            <File>
+              <FileName>qEvent.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qEvent.h</FilePath>
+            </File>
+            <File>
+              <FileName>qTask.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qTask.h</FilePath>
             </File>
           </Files>
         </Group>

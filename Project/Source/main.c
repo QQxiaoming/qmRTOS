@@ -218,6 +218,11 @@ void qTaskSystemTickHandler(void)
 		qTask * task = qNodeParent(node, qTask, delayNode);   //获取任务的地址
 		if(--task->delayTicks == 0)
 		{
+			if(task->waitEvent)        //判读任务是否存在等待事件块队列
+			{
+				qEventRemoveTask(task, (void *)0, qErrorTimeout);   //将任务移除事件等待队列，并发送超时错误  
+			}
+			
 			qTimeTaskWakeUp(task);                   //从延时队列唤醒任务
 			qTaskSchedRdy(task);                     //就绪任务
 		}
@@ -256,7 +261,6 @@ void idleTaskEntry(void * param)
 	{
 	}
 }
-
 
 /******************************************************************************
  * 函数名称：主函数
