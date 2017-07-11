@@ -424,6 +424,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qEvent.c</FilePath>
             </File>
+            <File>
+              <FileName>qSem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qSem.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -453,6 +458,11 @@
               <FileName>qTask.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qTask.h</FilePath>
+            </File>
+            <File>
+              <FileName>qSem.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qSem.h</FilePath>
             </File>
           </Files>
         </Group>

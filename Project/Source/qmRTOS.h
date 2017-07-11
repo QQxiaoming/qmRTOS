@@ -7,12 +7,15 @@
 #include "qLib.h"
 #include "qTask.h"
 #include "qEvent.h"
+#include "qSem.h"
 
 #include "Debug/Debug.h"
 
 typedef enum _qError{          //错误码
-	qErrorNoError = 0,
-	qErrorTimeout = 1,
+	qErrorNoError,
+	qErrorTimeout,
+	qErrorResourceUnavaliable,
+	qErrorDel,
 }qError;
 
 extern qTask * currentTask;   
