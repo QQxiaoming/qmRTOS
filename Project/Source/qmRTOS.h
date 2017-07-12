@@ -8,6 +8,7 @@
 #include "qTask.h"
 #include "qEvent.h"
 #include "qSem.h"
+#include "qMbox.h"
 
 #include "Debug/Debug.h"
 
@@ -16,6 +17,7 @@ typedef enum _qError{          //错误码
 	qErrorTimeout,
 	qErrorResourceUnavaliable,
 	qErrorDel,
+	qErrorResourceFull,
 }qError;
 
 extern qTask * currentTask;   

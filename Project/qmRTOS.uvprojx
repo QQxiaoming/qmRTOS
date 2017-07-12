@@ -429,6 +429,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qSem.c</FilePath>
             </File>
+            <File>
+              <FileName>qMbox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qMbox.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -463,6 +468,11 @@
               <FileName>qSem.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qSem.h</FilePath>
+            </File>
+            <File>
+              <FileName>qMbox.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qMbox.h</FilePath>
             </File>
           </Files>
         </Group>

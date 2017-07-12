@@ -7,6 +7,7 @@
 typedef enum _qEventType{
 	qEventTypeUnknow,
 	qEventTypeSem,
+	qEventTypeMbox,
 }qEventType;
 
 typedef struct _qEvent{
