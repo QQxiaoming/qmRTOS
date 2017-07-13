@@ -434,6 +434,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qMbox.c</FilePath>
             </File>
+            <File>
+              <FileName>qMemBlock.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qMemBlock.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -473,6 +478,11 @@
               <FileName>qMbox.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qMbox.h</FilePath>
+            </File>
+            <File>
+              <FileName>qMemBlock.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qMemBlock.h</FilePath>
             </File>
           </Files>
         </Group>

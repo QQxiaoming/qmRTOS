@@ -30,5 +30,5 @@ uint32_t qMboxNoWaitGet(qMbox * mbox, void **msg);
 uint32_t qMboxNotify(qMbox * mbox, void * msg, uint32_t notifyOption);
 void qMboxFlush(qMbox * mbox);
 uint32_t qMboxDestroy(qMbox * mbox);
-void tMboxGetInfo (qMbox * mbox, qMboxInfo * info);
+void qMboxGetInfo (qMbox * mbox, qMboxInfo * info);
 #endif /*QMBOX_H*/

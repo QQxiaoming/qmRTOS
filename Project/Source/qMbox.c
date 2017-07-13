@@ -182,7 +182,7 @@ uint32_t qMboxDestroy(qMbox * mbox)
             qMboxInfo * info           邮箱状态查询结构指针
  * 输出参数：删除的任务数
  ******************************************************************************/
-void tMboxGetInfo (qMbox * mbox, qMboxInfo * info)
+void qMboxGetInfo (qMbox * mbox, qMboxInfo * info)
 {
     uint32_t status = qTaskEnterCritical();
 

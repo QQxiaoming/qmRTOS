@@ -5,9 +5,10 @@
 #include "qTask.h"
 
 typedef enum _qEventType{
-	qEventTypeUnknow,
-	qEventTypeSem,
-	qEventTypeMbox,
+	qEventTypeUnknow,             //未知类型
+	qEventTypeSem,                //信号量类型
+	qEventTypeMbox,               //邮箱类型
+	qEventTypeMemBlock,          //存储块类型
 }qEventType;
 
 typedef struct _qEvent{
