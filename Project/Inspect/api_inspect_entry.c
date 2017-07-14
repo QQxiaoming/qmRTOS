@@ -147,5 +147,5 @@ void InspectTaskEntry(void * parm)
  *****************************************************************************/
 void InspectTaskstart(void)
 {
-	qTaskInit(&InspectTask, InspectTaskEntry, (void *)0xFFFFFFFF, 0, &InspectTaskEnv[1024]);  //初始化巡检任务
+	qTaskInit(&InspectTask, InspectTaskEntry, (void *)0xFFFFFFFF, 10, &InspectTaskEnv[1024]);  //初始化巡检任务
 }
