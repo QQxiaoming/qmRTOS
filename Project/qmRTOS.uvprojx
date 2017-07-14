@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source</IncludePath>
+              <IncludePath>.\Source;.\Inspect</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -377,7 +377,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>src</GroupName>
+          <GroupName>kernel\src</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
@@ -447,7 +447,7 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>inc</GroupName>
+          <GroupName>kernel\inc</GroupName>
           <Files>
             <File>
               <FileName>qmRTOS.h</FileName>
@@ -493,6 +493,36 @@
               <FileName>qFlagGroup.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qFlagGroup.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Inspect\src</GroupName>
+          <Files>
+            <File>
+              <FileName>api_inspect_entry.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Inspect\api_inspect_entry.c</FilePath>
+            </File>
+            <File>
+              <FileName>example_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Inspect\example_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>example_list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Inspect\example_list.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Inspect\inc</GroupName>
+          <Files>
+            <File>
+              <FileName>api_inspect_entry.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inspect\api_inspect_entry.h</FilePath>
             </File>
           </Files>
         </Group>
