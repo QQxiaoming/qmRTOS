@@ -29,6 +29,9 @@ typedef struct _qTask {            //任务结构
 	struct _qEvent * waitEvent;    //任务等待的事件块
 	void * eventMsg;               //等待的数据存放位置
 	uint32_t waitEventResult;      //等待的结果
+	
+	uint32_t waitFlagsType;        //等待请求类型
+	uint32_t eventFlags;           //请求标志
 }qTask;
 
 typedef struct _qTaskInfo{

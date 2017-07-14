@@ -439,6 +439,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qMemBlock.c</FilePath>
             </File>
+            <File>
+              <FileName>qFlagGroup.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qFlagGroup.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -483,6 +488,11 @@
               <FileName>qMemBlock.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qMemBlock.h</FilePath>
+            </File>
+            <File>
+              <FileName>qFlagGroup.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qFlagGroup.h</FilePath>
             </File>
           </Files>
         </Group>

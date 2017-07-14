@@ -10,6 +10,7 @@
 #include "qSem.h"
 #include "qMbox.h"
 #include "qMemBlock.h"
+#include "qFlagGroup.h"
 
 #include "Debug/Debug.h"
 

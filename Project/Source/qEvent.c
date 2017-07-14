@@ -64,7 +64,7 @@ qTask * qEventWakeUp(qEvent * event, void * msg, uint32_t result)
 		task->waitEvent = (qEvent *)0;         //对其事件块清除
 		task->eventMsg = msg;                  //设置消息
 		task->waitEventResult = result;        //设置唤醒结果
-		task->state &= QMRTOS_TASK_WAIT_WASK;  //清除状态位
+		task->state &= ~QMRTOS_TASK_WAIT_WASK; //清除状态位
 		
 		if(task->delayTicks != 0)
 		{
@@ -77,6 +77,35 @@ qTask * qEventWakeUp(qEvent * event, void * msg, uint32_t result)
 	qTaskExitCritical(statue);
 	
 	return task;
+}
+
+/******************************************************************************
+ * 函数名称：唤醒事件块制定任务函数
+ * 函数功能：让指定任务从等待事件块队列中唤醒
+ * 输入参数：qEvent * event       要进入的事件块结构指针
+			qTask * task         指定任务
+			void * msg           存放消息的位置 
+			uint32_t result      唤醒结果
+ * 输出参数：被唤醒的任务结构指针 
+ ******************************************************************************/
+void qEventWakeUpTask (qEvent * event, qTask * task, void * msg, uint32_t result)
+{
+    uint32_t status = qTaskEnterCritical();                 // 进入临界区
+
+    qListRemove(&event->waitList, &task->linkNode);         //将任务移除事件块
+
+    task->waitEvent = (qEvent *)0;      // 设置收到的消息、结构，清除相应的等待标志位
+    task->eventMsg = msg;
+    task->waitEventResult = result;
+    task->state &= ~QMRTOS_TASK_WAIT_WASK;
+
+    if (task->delayTicks != 0)          // 任务申请了超时等待，这里检查下，将其从延时队列中移除
+    {
+        qTimeTaskWakeUp(task);
+    }
+    qTaskSchedRdy(task);                // 将任务加入就绪队列
+
+    qTaskExitCritical(status);          // 退出临界区
 }
 
 /******************************************************************************
