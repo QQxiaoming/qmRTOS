@@ -15,6 +15,7 @@ typedef enum {
 //	INSPECT_MBOX,          //邮箱
 //	INSPECT_MEMBLOCK,      //存储块
 //	INSPECT_FLAGGROUP,     //事件标志组
+//	INSPECT_MUTEX,         //互斥锁
 	INSPECT_NUM
 }InspectID;                //检查项目
 

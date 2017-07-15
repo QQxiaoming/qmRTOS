@@ -10,6 +10,7 @@ typedef enum _qEventType{
 	qEventTypeMbox,               //邮箱类型
 	qEventTypeMemBlock,           //存储块类型
 	qEventTypeFlagGroup,          //事件标志组类型
+	qEventTypeMutex,              //互斥锁类型
 }qEventType;
 
 typedef struct _qEvent{

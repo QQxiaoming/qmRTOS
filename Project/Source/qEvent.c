@@ -27,7 +27,7 @@ void qEventWait(qEvent * event, qTask * task, void * msg,  uint32_t state, uint3
 {
 	uint32_t statue = qTaskEnterCritical();   //进入临界区
 
-	task->state |= state;      //设定任务状态标志
+	task->state |= state << 16;      //设定任务状态标志
 	task->waitEvent = event;   //设置进入的事件块
 	task->eventMsg = msg;      //设置存放消息
 	task->waitEventResult = qErrorNoError; //设置等待结果无

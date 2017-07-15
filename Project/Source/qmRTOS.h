@@ -11,6 +11,7 @@
 #include "qMbox.h"
 #include "qMemBlock.h"
 #include "qFlagGroup.h"
+#include "qMutex.h"
 
 #include "Debug/Debug.h"
 
@@ -20,6 +21,7 @@ typedef enum _qError{          //错误码
 	qErrorResourceUnavaliable,
 	qErrorDel,
 	qErrorResourceFull,
+	qErrorOwner
 }qError;
 
 extern qTask * currentTask;   

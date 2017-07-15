@@ -8,7 +8,7 @@ extern InspectStu Example_ListEntry(void);
 static qTask InspectTask;                                             //巡检任务
 static qTaskStack InspectTaskEnv[1024];
 
-static uint8_t gInspectErrCnt = 0;                              //定义标记错误个数变量
+static uint8_t gInspectErrCnt = 0;                                    //定义标记错误个数变量
 	
 static Inspect_def qInspect[INSPECT_NUM] = {                          //巡检表
 	{INSPECT_TASK, INSPECT_STU_START, Example_TaskEntry, "TASK"},

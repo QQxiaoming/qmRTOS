@@ -444,6 +444,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qFlagGroup.c</FilePath>
             </File>
+            <File>
+              <FileName>qMutex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qMutex.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -493,6 +498,11 @@
               <FileName>qFlagGroup.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qFlagGroup.h</FilePath>
+            </File>
+            <File>
+              <FileName>qMutex.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qMutex.h</FilePath>
             </File>
           </Files>
         </Group>
