@@ -13,36 +13,44 @@
 void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio, qTaskStack * stack )
 {
 	//堆栈内容初始化，传递末端的地址，内核按满递减方式增长。
-	*(--stack) = (unsigned long)(1 << 24);              // XPSR, 设置了Thumb模式，恢复到Thumb状态而非ARM状态运行
-	*(--stack) = (unsigned long)entry;                  // PC, 程序的入口地址
-    *(--stack) = (unsigned long)0x14;                   // R14(LR), 任务不会通过return xxx结束自己，所以未用
-    *(--stack) = (unsigned long)0x12;                   // R12, 未用
-    *(--stack) = (unsigned long)0x3;                    // R3, 未用
-    *(--stack) = (unsigned long)0x2;                    // R2, 未用
-    *(--stack) = (unsigned long)0x1;                    // R1, 未用
-    *(--stack) = (unsigned long)param;                  // R0 = param, 传给任务的入口函数
-    *(--stack) = (unsigned long)0x11;                   // R11, 未用
-    *(--stack) = (unsigned long)0x10;                   // R10, 未用
-    *(--stack) = (unsigned long)0x9;                    // R9, 未用
-    *(--stack) = (unsigned long)0x8;                    // R8, 未用
-    *(--stack) = (unsigned long)0x7;                    // R7, 未用
-    *(--stack) = (unsigned long)0x6;                    // R6, 未用
-    *(--stack) = (unsigned long)0x5;                    // R5, 未用
-    *(--stack) = (unsigned long)0x4;                    // R4, 未用
+	*(--stack) = (unsigned long)(1 << 24);              //XPSR, 设置了Thumb模式，恢复到Thumb状态而非ARM状态运行
+	*(--stack) = (unsigned long)entry;                  //PC, 程序的入口地址
+    *(--stack) = (unsigned long)0x14;                   //R14(LR), 任务不会通过return xxx结束自己，所以未用
+    *(--stack) = (unsigned long)0x12;                   //R12, 未用
+    *(--stack) = (unsigned long)0x3;                    //R3, 未用
+    *(--stack) = (unsigned long)0x2;                    //R2, 未用
+    *(--stack) = (unsigned long)0x1;                    //R1, 未用
+    *(--stack) = (unsigned long)param;                  //R0 = param, 传给任务的入口函数
+    *(--stack) = (unsigned long)0x11;                   //R11, 未用
+    *(--stack) = (unsigned long)0x10;                   //R10, 未用
+    *(--stack) = (unsigned long)0x9;                    //R9, 未用
+    *(--stack) = (unsigned long)0x8;                    //R8, 未用
+    *(--stack) = (unsigned long)0x7;                    //R7, 未用
+    *(--stack) = (unsigned long)0x6;                    //R6, 未用
+    *(--stack) = (unsigned long)0x5;                    //R5, 未用
+    *(--stack) = (unsigned long)0x4;                    //R4, 未用
 	
-	task->slice = QMRTOS_SLTIC_MAX;                     // 时间片初始化为最大值
-	task->stack = stack;                                // 保存最终的值
-	task->delayTicks = 0;								// 初始任务延时个数为0
-	task->prio = prio;                                  // 设置任务的优先级
-	task->state = QMRTOS_TASK_STATE_RDY;                // 设置任务为就绪状态
-	task->suspendCount = 0;                             // 初始挂起计数器为0
-	task->clean = (void (*)(void *))0;                  // 初始清理函数为空
-	task->cleanParam = (void *)0;                            // 初始清理函数的参数为空
+	task->slice = QMRTOS_SLTIC_MAX;                     //时间片初始化为最大值
+	task->stack = stack;                                //保存最终的值
+	task->delayTicks = 0;								//初始任务延时个数为0
+	task->prio = prio;                                  //设置任务的优先级
+	task->state = QMRTOS_TASK_STATE_RDY;                //设置任务为就绪状态
+	task->suspendCount = 0;                             //初始挂起计数器为0
+	task->clean = (void (*)(void *))0;                  //初始清理函数为空
+	task->cleanParam = (void *)0;                       //初始清理函数的参数为空
+    task->requestDeleteFlag = 0;                        //请求删除标记
 
-	qNodeInit(&(task->delayNode));                      // 初始化延时结点
-	qNodeInit(&(task->linkNode));                       // 初始化链接结点
+    task->waitEvent = (qEvent *)0;                      //没有等待事件
+    task->eventMsg = (void *)0;                         //没有等待事件
+    task->waitEventResult = qErrorNoError;              //没有等待事件错误
 	
-	qTaskSchedRdy(task);                                // 将任务加入队列并就绪
+	task->eventFlags = 0;                               //标志为空
+	task->waitFlagsType = 0;                            //无类型
+	
+	qNodeInit(&(task->delayNode));                      //初始化延时结点
+	qNodeInit(&(task->linkNode));                       //初始化链接结点
+	
+	qTaskSchedRdy(task);                                //将任务加入队列并就绪
 }
 
 /******************************************************************************
