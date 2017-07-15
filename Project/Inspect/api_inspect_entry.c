@@ -16,12 +16,11 @@ static Inspect_def qInspect[INSPECT_NUM] = {                          //巡检�
 };
 
 /*****************************************************************************
- 函数名  	: LOS_InspectStatusSetByID
+ 函数名  	: qInspectStatusSetByID
  描述  	    : 设置检查状态标志
  输入参数	: InspectID  ---  被检查的模块ID
-              InspectStu ---
- 输出参数 	: 无
- 返回值   	: LOS_NOK/LOS_OK
+              InspectStu ---  检查标志
+ 返回值   	: 是否成功
  *****************************************************************************/
 InspectStu qInspectStatusSetByID(InspectID inspectid,InspectStu inspectstu)
 {

@@ -33,7 +33,7 @@ InspectStu Example_ListEntry(void)
 		}
     }
 	
-	dprintf("List is success\n");
+	dprintf("List module is success\r\n");
 	qInspectStatusSetByID(INSPECT_LIST, INSPECT_STU_SUCCESS);
 	return INSPECT_STU_SUCCESS;
 }

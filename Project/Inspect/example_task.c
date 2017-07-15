@@ -15,6 +15,7 @@ void taskHiEntry(void * param)
 	qTaskSuspend(currentTask);                       //挂起高优先级任务
 	dprintf("TaskHi LOS_TaskResume Success.\r\n");
 	qInspectStatusSetByID(INSPECT_TASK, INSPECT_STU_SUCCESS);     //设置巡检成功
+	dprintf("Task module is success\r\n");
 	qTaskDeleteSelf();                               //删除高优先级任务
 }
 
