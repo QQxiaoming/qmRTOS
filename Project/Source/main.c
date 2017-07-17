@@ -277,9 +277,9 @@ int main()
 	
 	qTaskDelayedInit();        //延时列表初始化
 	
-	qInitApp();                //任务初始化
+//	qInitApp();                //任务初始化
 	
-//	InspectTaskstart();        //进行功能巡检测试任务
+	InspectTaskstart();        //进行功能巡检测试任务
 	
 	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, QMRTOS_PRO_COUNT - 1, &idleTaskEnv[QMRTOS_IDLETSSK_STACK_SIZE]);  //初始化空闲任务
 	idleTask = &qTaskIdle;

@@ -10,7 +10,7 @@ typedef enum {
 typedef enum {
     INSPECT_TASK = 0,      //任务
 	INSPECT_LIST,          //双向链表
-//  INSPECT_EVENT,         //事件控制块
+    INSPECT_EVENT,         //事件控制块
 //	INSPECT_SEM,           //计数信号量
 //	INSPECT_MBOX,          //邮箱
 //	INSPECT_MEMBLOCK,      //存储块

@@ -524,6 +524,11 @@
               <FileType>1</FileType>
               <FilePath>.\Inspect\example_list.c</FilePath>
             </File>
+            <File>
+              <FileName>example_event.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Inspect\example_event.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

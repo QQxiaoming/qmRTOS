@@ -4,6 +4,7 @@
 
 extern InspectStu Example_TaskEntry(void);
 extern InspectStu Example_ListEntry(void);
+extern InspectStu Example_EventEntry(void);
 
 static qTask InspectTask;                                             //巡检任务
 static qTaskStack InspectTaskEnv[1024];
@@ -13,6 +14,7 @@ static uint8_t gInspectErrCnt = 0;                                    //定义�
 static Inspect_def qInspect[INSPECT_NUM] = {                          //巡检表
 	{INSPECT_TASK, INSPECT_STU_START, Example_TaskEntry, "TASK"},
 	{INSPECT_LIST, INSPECT_STU_START, Example_ListEntry, "LIST"},
+	{INSPECT_EVENT, INSPECT_STU_START, Example_EventEntry, "EVENT"},
 };
 
 /*****************************************************************************
