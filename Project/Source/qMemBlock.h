@@ -1,6 +1,19 @@
 #ifndef QMEMBLOCK_H
 #define QMEMBLOCK_H
-
+/*
+******************************************************************************
+* Copyright (c) 2017,学生开放实验室
+* All rights reserved.
+******************************************************************************
+* 文件名称： qMemBlock.h
+* 文件标识： OS
+* 摘 要： 内存块函数声明
+******************************************************************************
+* 当前版本： 1.0
+* 作 者： Quard
+* 完成日期： 2017年7月18日
+******************************************************************************
+*/
 #include "qEvent.h"
 
 typedef struct _qMemBlock
@@ -28,3 +41,5 @@ uint32_t qMemBlockDestroy(qMemBlock * memBlock);
 void qMemBlockGetInfo(qMemBlock * memBlock, qMemBlockInfo * info);
 
 #endif /*QMEMBLOCK_H*/
+
+/************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/

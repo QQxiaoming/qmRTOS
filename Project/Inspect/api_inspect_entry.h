@@ -1,3 +1,17 @@
+/*
+******************************************************************************
+* Copyright (c) 2017,学生开放实验室
+* All rights reserved.
+******************************************************************************
+* 文件名称： api_inspect_entry.h
+* 文件标识： 巡检测试任务
+* 摘 要： 系统各模块巡检任务结构函数声明
+******************************************************************************
+* 当前版本： 1.0
+* 作 者： Quard
+* 完成日期： 2017年7月18日
+******************************************************************************
+*/
 #ifndef API_INSPECT_ENTRY_H
 #define API_INSPECT_ENTRY_H
 
@@ -31,3 +45,5 @@ void InspectTaskstart(void);
 InspectStu qInspectStatusSetByID(InspectID inspectid,InspectStu inspectstu);
 InspectStu qInspectByID(InspectID inspectid);
 #endif /*API_INSPECT_ENTRY_H*/
+
+/************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/

@@ -1,3 +1,17 @@
+/*
+******************************************************************************
+* Copyright (c) 2017,学生开放实验室
+* All rights reserved.
+******************************************************************************
+* 文件名称： qEvent.h
+* 文件标识： OS
+* 摘 要： 事件控制块函数声明
+******************************************************************************
+* 当前版本： 1.0
+* 作 者： Quard
+* 完成日期： 2017年7月18日
+******************************************************************************
+*/
 #ifndef QEVENT_H
 #define QEVENT_H
 
@@ -27,3 +41,5 @@ void qEventRemoveTask(qTask * task, void * msg, uint32_t result);
 uint32_t qEventRemoveAll(qEvent * event, void * msg, uint32_t result);
 uint32_t qEventWaitCount(qEvent * event);
 #endif /*QEVENT_H*/
+
+/************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/
