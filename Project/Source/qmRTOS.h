@@ -26,6 +26,7 @@
 #include "qMemBlock.h"
 #include "qFlagGroup.h"
 #include "qMutex.h"
+#include "qTimer.h"
 
 #include "Debug/Debug.h"
 

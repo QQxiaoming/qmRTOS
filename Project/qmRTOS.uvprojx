@@ -449,6 +449,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qMutex.c</FilePath>
             </File>
+            <File>
+              <FileName>qTimer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qTimer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -503,6 +508,11 @@
               <FileName>qMutex.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qMutex.h</FilePath>
+            </File>
+            <File>
+              <FileName>qTimer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qTimer.h</FilePath>
             </File>
           </Files>
         </Group>
