@@ -158,7 +158,7 @@ void qTaskForceDelete(qTask * task)
 	{   
 		qTaskSched();        //如果是则进行任务调度
 	}
-	
+	task->state = QMRTOS_TASK_STATE_DESTORYED;
 	qTaskExitCritical(statue);
 }
 
@@ -212,9 +212,9 @@ void qTaskDeleteSelf(void)
 	{
 		currentTask->clean(currentTask->cleanParam);            //调用清理函数，注意此处写法
 	}
-	
+		
 	qTaskSched();  //调用任务调度函数
-	
+	currentTask->state = QMRTOS_TASK_STATE_DESTORYED;
 	qTaskExitCritical(statue);
 }
 
