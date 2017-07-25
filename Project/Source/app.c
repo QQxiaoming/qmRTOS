@@ -37,7 +37,6 @@ int task4Flag;
  ******************************************************************************/
 void task1Entry(void * param)
 {
-	qSetSysTickPeriod (10);   //初始化系统定时器为10ms
 	dprintf("this is task1\n");
 	for(;;)
 	{

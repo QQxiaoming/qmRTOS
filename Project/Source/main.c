@@ -74,7 +74,7 @@ void qTaskSchedDisable(void)
 		schedLockCount++;
 	}
 	
-	qTaskExitCritical(status);
+	qTaskExitCritical(status);                          //退出临界区
 }
 
 /******************************************************************************
@@ -95,7 +95,7 @@ void qTaskSchedEnable(void)
         }
     }
 
-    qTaskExitCritical(status);
+    qTaskExitCritical(status);                    //退出临界区
 }
 
 /******************************************************************************
@@ -152,7 +152,7 @@ void qTaskSched(void)
 	
 	uint32_t status = qTaskEnterCritical();          //对任务调度函数进行保护
 		
-    if (schedLockCount > 0)                          // 若调度器已经被上锁，则不进行调度，直接退出
+    if (schedLockCount > 0)                          //若调度器已经被上锁，则不进行调度，直接退出
     {
         qTaskExitCritical(status);
         return;
@@ -165,7 +165,7 @@ void qTaskSched(void)
         qTaskSwitch();   
     }
 
-    qTaskExitCritical(status);                       // 退出临界区
+    qTaskExitCritical(status);                       //退出临界区
 }
 	
 /******************************************************************************
@@ -189,7 +189,7 @@ void qTaskDelayedInit(void)
 void qTimeTaskWait(qTask * task, uint32_t ticks)
 {
 	task->delayTicks = ticks;                             //延时时间 
-	qListAddLast(&qTaskDelayedList, &(task->delayNode));   //将对应任务插入到延时队列队尾
+	qListAddLast(&qTaskDelayedList, &(task->delayNode));  //将对应任务插入到延时队列队尾
 	task->state |= QMRTOS_TASK_STATE_DELAYED;             //将任务状态标志位置为延时状态 
 }
 
@@ -254,15 +254,16 @@ void qTaskSystemTickHandler(void)
 		}
 	}
 	
-	qTaskExitCritical(status);
+	qTaskExitCritical(status);       //退出临界区
 	
+	qTimerModuieTickNotify();        //调用处理软件定时器任务函数
 	qTaskSched();                    //调用任务调度函数
 }
 
 
 
 qTask qTaskIdle;     //定义空闲任务
-qTaskStack idleTaskEnv[QMRTOS_IDLETSSK_STACK_SIZE]; //定义空任务堆栈空间  
+qTaskStack idleTaskEnv[QMRTOS_IDLETASK_STACK_SIZE]; //定义空任务堆栈空间  
 
 /******************************************************************************
  * 函数名称：空闲任务函数
@@ -272,6 +273,7 @@ qTaskStack idleTaskEnv[QMRTOS_IDLETSSK_STACK_SIZE]; //定义空任务堆栈空�
  ******************************************************************************/
 void idleTaskEntry(void * param)
 {
+	dprintf("this is idleTask\n");
 	for(;;)
 	{
 
@@ -291,11 +293,13 @@ int main()
 	
 	qTaskDelayedInit();        //延时列表初始化
 	
-//	qInitApp();                //任务初始化
+	qTimerModuleInit();        //初始化软定时器任务
 	
-	InspectTaskstart();        //进行功能巡检测试任务
+	qInitApp();                //任务初始化
 	
-	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, QMRTOS_PRO_COUNT - 1, &idleTaskEnv[QMRTOS_IDLETSSK_STACK_SIZE]);  //初始化空闲任务
+//	InspectTaskstart();        //进行功能巡检测试任务
+	
+	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, QMRTOS_PRO_COUNT - 1, &idleTaskEnv[QMRTOS_IDLETASK_STACK_SIZE]);  //初始化空闲任务
 	idleTask = &qTaskIdle;
 
     nextTask = qTaskHighestReady();   //初始自动查找最高优先级的任务运行
