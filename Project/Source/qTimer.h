@@ -58,6 +58,7 @@ void qTimerStart(qTimer * timer);
 void qTimerStop(qTimer * timer);
 void qTimerDestroy(qTimer * timer);
 void qTimerGetInfo(qTimer * timer, qTimerInfo * Info);
+void qTimerInitTask(void);
 
 void qTimerModuieTickNotify(void);
 void qTimerModuleInit(void);

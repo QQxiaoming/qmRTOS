@@ -14,6 +14,8 @@
 */
 #include "qmRTOS.h"
 
+#if QMRTOS_ENABLE_TIMER 
+
 static qList qTimerHardList;       //硬中断中定时器列表
 static qList qTimerSoftList;       //定时器任务中定时器列表
 static qSem qTimerProtectSem;      //任务访问软定时器列表信号量
@@ -195,7 +197,6 @@ static qTaskStack qTimerTaskStack[QMRTOS_TIMERTASK_STACK_SIZE];
  ******************************************************************************/
 static void qTimerSoftTaskEntry(void * param)
 {
-	qSetSysTickPeriod (10);                  //初始化系统定时器为10ms
 	dprintf("this is TimerSoftTask\n");
 	for(;;)
 	{
@@ -227,22 +228,35 @@ void qTimerModuieTickNotify(void)
 }
 
 /******************************************************************************
- * 函数名称：软定时器任务初始化函数
- * 函数功能：软定时器任务初始化
+ * 函数名称：软定时器初始化函数
+ * 函数功能：软定时器初始化
  * 输入参数：无
  * 输出参数：无
  ******************************************************************************/
 void qTimerModuleInit(void)
 {
+#if QMRTOS_ENABLE_SEM == 0                    //使用软定时器需要打开信号量模块剪裁
+	#error "Sem module is not open"
+#endif /*QMRTOS_ENABLE_SEM == 0*/
 	qListInit(&qTimerHardList);               //初始化定时器列表
 	qListInit(&qTimerSoftList);
 	qSemInit(&qTimerProtectSem, 1, 1);        //初始化保护信号量,只能使用一次初始可以使用
 	qSemInit(&qTimerTickSem, 0, 0);           //初始化通知信号量,无限制
+}
 
+/******************************************************************************
+ * 函数名称：软定时器任务初始化函数
+ * 函数功能：软定时器任务初始化
+ * 输入参数：无
+ * 输出参数：无
+ ******************************************************************************/
+void qTimerInitTask(void)
+{
 #if QMRTOS_TIMERTASK_PRTO >= (QMRTOS_PRO_COUNT - 1)      //软定时器任务不能超出优先级个数
 	#error "The proprity of timer tasker must greater then (QMRTOS_PRO_COUNT - 1)"
-#endif
-	qTaskInit(&qTimerTask, qTimerSoftTaskEntry, (void *)0, QMRTOS_TIMERTASK_PRTO, &qTimerTaskStack[QMRTOS_TIMERTASK_STACK_SIZE]);  //初始化软定时器任务
+#endif /*QMRTOS_TIMERTASK_PRTO >= (QMRTOS_PRO_COUNT - 1)*/
+	qTaskInit(&qTimerTask, qTimerSoftTaskEntry, (void *)0, QMRTOS_TIMERTASK_PRTO, qTimerTaskStack, QMRTOS_TIMERTASK_STACK_SIZE);  //初始化软定时器任务
 }	
 
+#endif /*QMRTOS_ENABLE_TIMER*/
 /************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/

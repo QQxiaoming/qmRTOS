@@ -28,6 +28,9 @@ typedef uint32_t qTaskStack;       //堆栈单元类型
 
 typedef struct _qTask {            //任务结构
 	qTaskStack * stack;            //任务堆栈指针
+	uint32_t * stackBase;          //堆栈起始地址
+	uint32_t stackSize;            //堆栈总大小
+	
 	qNode linkNode;                //连接结点
 	uint32_t delayTicks;           //任务延时个数
 	qNode delayNode;               //任务延时结点
@@ -54,9 +57,12 @@ typedef struct _qTaskInfo{
 	uint32_t state;
 	uint32_t slice;
 	uint32_t suspendCount;
+	
+	uint32_t stackSize; 
+	uint32_t stackFree;
 }qTaskInfo;
 
-void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio, qTaskStack * stack );
+void qTaskInit(qTask * task , void (*entry) (void *), void *param ,uint32_t prio, qTaskStack * stack, uint32_t size);
 void qTaskSuspend(qTask * task);
 void qTaskWakeUp(qTask * task);
 void qTaskSetCleanCallFunc(qTask * task, void (*clean)(void * param), void * param);

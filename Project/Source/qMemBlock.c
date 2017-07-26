@@ -14,6 +14,7 @@
 */
 #include "qmRTOS.h"
 
+#if QMRTOS_ENABLE_MEMBLOCK
 /******************************************************************************
  * 函数名称：存储块初始化函数
  * 函数功能：初始化存储块
@@ -170,4 +171,5 @@ void qMemBlockGetInfo(qMemBlock * memBlock, qMemBlockInfo * info)
     qTaskExitCritical(status);
 }
 
+#endif /*QMRTOS_ENABLE_MEMBLOCK*/
 /************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/

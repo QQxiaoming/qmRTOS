@@ -109,11 +109,10 @@ void task4Entry(void * param)
  ******************************************************************************/
 void qInitApp(void)
 {
-	qTaskInit(&qTask1, task1Entry, (void *)0x11111111, 0, &tasklEnv[1024]);  //初始化任务
-	qTaskInit(&qTask2, task2Entry, (void *)0x22222222, 1, &task2Env[1024]);
-	qTaskInit(&qTask3, task3Entry, (void *)0x33333333, 0, &task3Env[1024]);
-	qTaskInit(&qTask4, task4Entry, (void *)0x44444444, 1, &task4Env[1024]);
-
+	qTaskInit(&qTask1, task1Entry, (void *)0x11111111, 0, tasklEnv, sizeof(tasklEnv));  //初始化任务
+	qTaskInit(&qTask2, task2Entry, (void *)0x22222222, 1, task2Env, sizeof(task2Env));
+	qTaskInit(&qTask3, task3Entry, (void *)0x33333333, 0, task3Env, sizeof(task3Env));
+	qTaskInit(&qTask4, task4Entry, (void *)0x44444444, 1, task4Env, sizeof(task4Env));
 }
 
 

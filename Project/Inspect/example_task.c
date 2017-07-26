@@ -47,8 +47,8 @@ InspectStu Example_TaskEntry(void)
 {
 	qTaskSchedDisable();     //锁任务调度
 	
-	qTaskInit(&taskHi, taskHiEntry, (void *)0x11111111, 4, &taskHiEnv[1024]);  //初始化任务
-	qTaskInit(&taskLo, taskLoEntry, (void *)0x22222222, 5, &taskLoEnv[1024]);
+	qTaskInit(&taskHi, taskHiEntry, (void *)0x11111111, 4, taskHiEnv, sizeof(taskHiEnv));  //初始化任务
+	qTaskInit(&taskLo, taskLoEntry, (void *)0x22222222, 5, taskLoEnv, sizeof(taskLoEnv));
 	
 	dprintf("qTaskInit() Success!\r\n");
 	

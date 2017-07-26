@@ -27,8 +27,11 @@
 #include "qFlagGroup.h"
 #include "qMutex.h"
 #include "qTimer.h"
+#include "qHooks.h"
 
 #include "Debug/Debug.h"
+
+#define   TICK_PER_SEC         (1000 / QMRTOS_SYSTICK_MS)
 
 typedef enum _qError{          //错误码
 	qErrorNoError,
@@ -64,6 +67,8 @@ void qTaskDelay(uint32_t delay);
 
 void qSetSysTickPeriod(uint32_t ms);
 void qInitApp(void);
+
+float qCpuUsageGet(void);
 
 #endif /*QMRTOS_H*/
 

@@ -14,6 +14,7 @@
 */
 #include "qmRTOS.h"
 
+#if QMRTOS_ENABLE_SEM
 /******************************************************************************
  * 函数名称：计数信号量初始化函数
  * 函数功能：初始化计数信号量
@@ -157,4 +158,5 @@ void qSemGetInfo(qSem * sem, qSemInfo * info)
 	qTaskExitCritical(status); 
 }
 
+#endif /*QMRTOS_ENABLE_SEM*/
 /************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/

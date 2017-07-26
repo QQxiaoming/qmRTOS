@@ -46,7 +46,7 @@ InspectStu Example_EventEntry(void)
 	
 	qEventInit(&eventWaitTimeout, qEventTypeUnknow);    //初始化事件
 	
-	qTaskInit(&eventTask, eventTaskEntry, 0x0, 5, &eventTaskEnv[1024]);  //初始化示例任务
+	qTaskInit(&eventTask, eventTaskEntry, 0x0, 5, eventTaskEnv, sizeof(eventTaskEnv));  //初始化示例任务
 	
 	qTaskDelay(7);                                   //任务延时
 	

@@ -14,6 +14,7 @@
 */
 #include "qmRTOS.h"
 
+#if QMRTOS_ENABLE_MBOX
 /******************************************************************************
  * 函数名称：邮箱初始化函数
  * 函数功能：初始化邮箱
@@ -208,4 +209,5 @@ void qMboxGetInfo (qMbox * mbox, qMboxInfo * info)
     qTaskExitCritical(status);
 }
 
+#endif /*QMRTOS_ENABLE_MBOX*/
 /************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/

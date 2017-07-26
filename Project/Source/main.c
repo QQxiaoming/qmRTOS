@@ -15,18 +15,27 @@
 #include "qmRTOS.h"
 #include "api_inspect_entry.h"
 
-qTask * currentTask;   //指示当前任务的指针
-qTask * nextTask;      //指向下一个任务的指针
-qTask * idleTask;      //指向空闲任务的指针
+qTask * currentTask;    //指示当前任务的指针
+qTask * nextTask;       //指向下一个任务的指针
+qTask * idleTask;       //指向空闲任务的指针
 
-qBitmap taskPrioBitmap;// 任务优先级的标记位置结构
+qBitmap taskPrioBitmap; // 任务优先级的标记位置结构
 
 qList taskTable[QMRTOS_PRO_COUNT];  //任务列表
 
-uint8_t schedLockCount;//调度锁计数器 
+uint8_t schedLockCount; //调度锁计数器 
 
+uint32_t tickCount;     //时钟节拍次数
 qList qTaskDelayedList; //延时队列
 
+uint32_t idleCount;     //cpu使用率计数器
+uint32_t idleMaxCount;  //最大计数值
+
+#if QMRTOS_ENABLE_CPUUSAGE_STAT
+static void initCpuUsageState(void);
+static void checkCpuUsage(void);
+static void cpuUsageSyncWithSysTick(void);
+#endif /*QMRTOS_ENABLE_CPUUSAGE_STAT*/
 
 /******************************************************************************
  * 函数名称：查询当前就绪的优先级最高任务函数
@@ -162,6 +171,11 @@ void qTaskSched(void)
     if (tempTask != currentTask) 
     {
         nextTask = tempTask;
+		
+#if QMRTOS_ENABLE_HOOKS
+		qHooksTaskSwitch(currentTask, nextTask);
+#endif /*QMRTOS_ENABLE_HOOKS*/
+		
         qTaskSwitch();   
     }
 
@@ -217,6 +231,16 @@ void qTimeTaskRomove(qTask * task)
 }
 
 /******************************************************************************
+ * 函数名称：时钟节拍计数器初始化函数
+ * 函数功能：初始化时钟节拍计数器
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+void qTimetickInit(void)
+{
+	tickCount = 0;
+}
+/******************************************************************************
  * 函数名称：任务SysTick定时器中断函数
  * 函数功能：发生中断时被定时器中断函数调用，使delayTicks--，并调用一次调度函数
  * 输入参数：无
@@ -254,13 +278,103 @@ void qTaskSystemTickHandler(void)
 		}
 	}
 	
-	qTaskExitCritical(status);       //退出临界区
+	tickCount++;                     //节拍数自加
 	
+#if QMRTOS_ENABLE_CPUUSAGE_STAT
+	checkCpuUsage();                 //检查cpu使用率
+#endif /*QMRTOS_ENABLE_CPUUSAGE_STAT*/
+	
+	qTaskExitCritical(status);       //退出临界区
+
+#if QMRTOS_ENABLE_TIMER 	
 	qTimerModuieTickNotify();        //调用处理软件定时器任务函数
+#endif /*QMRTOS_ENABLE_TIMER*/
+	
+#if QMRTOS_ENABLE_HOOKS
+	qHooksSysTick();                 //时钟节拍钩子函数
+#endif /*QMRTOS_ENABLE_HOOKS*/
+	
 	qTaskSched();                    //调用任务调度函数
 }
 
+#if QMRTOS_ENABLE_CPUUSAGE_STAT
+static float cpuUsage;               //cpu使用率
+static uint32_t enableCpuUsageState; //同步标志
+/******************************************************************************
+ * 函数名称：cpu使用率时钟同步标志初始化函数
+ * 函数功能：初始化同步时钟标志
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+static void initCpuUsageState(void)
+{
+	idleCount = 0;
+	idleMaxCount = 0;
+	cpuUsage = 0.0f;
+	enableCpuUsageState = 0;
+}
 
+/******************************************************************************
+ * 函数名称：cpu使用率时钟检查函数
+ * 函数功能：检查cpu使用率时钟
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+static void checkCpuUsage(void)
+{
+	if(enableCpuUsageState == 0)  //判断是否已经同步
+	{
+		enableCpuUsageState = 1;  //设置其同步
+		tickCount = 0;            //设置初始节拍计数为0
+		return;
+	}
+	
+	if(tickCount == TICK_PER_SEC) //判断节拍数是否到达规定时间
+	{
+		idleMaxCount = idleCount; //将最大计数值赋值
+		idleCount = 0;            //清零计数
+		
+		qTaskSchedEnable();       //解除调度锁
+	}
+	else if(tickCount % TICK_PER_SEC == 0)  //判断节拍数之后到达相同时间后
+	{
+		cpuUsage = 100 - (idleCount * 100.0 / idleMaxCount);  //计算cpu使用率
+		idleCount = 0;            //清零计数
+	}
+}
+
+/******************************************************************************
+ * 函数名称：cpu使用率时钟同步函数
+ * 函数功能：同步时钟
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+static void cpuUsageSyncWithSysTick(void)
+{
+	while(enableCpuUsageState == 0)
+	{
+		;;
+	}
+}
+
+/******************************************************************************
+ * 函数名称：cpu使用率获取函数
+ * 函数功能：获取cpu使用率
+ * 输入参数：无
+ * 输出参数：无 
+ ******************************************************************************/
+float qCpuUsageGet(void)
+{
+	float usage = 0;
+	uint32_t status = qTaskEnterCritical();          //进入临界区
+
+	usage = cpuUsage;
+	
+	qTaskExitCritical(status);       //退出临界区
+	
+	return usage;
+}
+#endif /*QMRTOS_ENABLE_CPUUSAGE_STAT*/
 
 qTask qTaskIdle;     //定义空闲任务
 qTaskStack idleTaskEnv[QMRTOS_IDLETASK_STACK_SIZE]; //定义空任务堆栈空间  
@@ -274,9 +388,34 @@ qTaskStack idleTaskEnv[QMRTOS_IDLETASK_STACK_SIZE]; //定义空任务堆栈空�
 void idleTaskEntry(void * param)
 {
 	dprintf("this is idleTask\n");
+	
+	qTaskSchedDisable();                 //关闭调度锁
+	
+#if QMRTOS_ENABLE_TIMER 
+	qTimerInitTask();                    //初始化定时器任务
+#endif /*QMRTOS_ENABLE_TIMER*/ 
+	
+#if QMRTOS_ENABLE_INSPECT
+	InspectTaskstart();                  //进行功能巡检测试任务
+#else
+	qInitApp();                          //应用任务初始化	
+#endif /*QMRTOS_ENABLE_INSPECT*/
+	
+	qSetSysTickPeriod(QMRTOS_SYSTICK_MS);//初始化系统定时器为10ms
+	
+#if QMRTOS_ENABLE_CPUUSAGE_STAT	
+	cpuUsageSyncWithSysTick();           //等待时钟同步
+#endif /*QMRTOS_ENABLE_CPUUSAGE_STAT*/
+	
 	for(;;)
 	{
-
+		uint32_t status = qTaskEnterCritical();          //进入临界区
+		idleCount++;                                     //cpu使用率计数器
+		qTaskExitCritical(status);                       //退出临界区
+		
+#if QMRTOS_ENABLE_HOOKS
+		qHooksCpuIdle();                                 //空闲任务钩子函数
+#endif /*QMRTOS_ENABLE_HOOKS*/
 	}
 }
 
@@ -292,14 +431,18 @@ int main()
 	dprintf("TaskInit is Ok!\n");
 	
 	qTaskDelayedInit();        //延时列表初始化
+
+#if QMRTOS_ENABLE_TIMER 
+	qTimerModuleInit();        //初始化软定时器
+#endif /*QMRTOS_ENABLE_TIMER*/
 	
-	qTimerModuleInit();        //初始化软定时器任务
+	qTimetickInit();           //初始化时钟节拍计数
+
+#if QMRTOS_ENABLE_CPUUSAGE_STAT	
+	initCpuUsageState();       //初始化cpu统计
+#endif /*QMRTOS_ENABLE_CPUUSAGE_STAT*/
 	
-	qInitApp();                //任务初始化
-	
-//	InspectTaskstart();        //进行功能巡检测试任务
-	
-	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, QMRTOS_PRO_COUNT - 1, &idleTaskEnv[QMRTOS_IDLETASK_STACK_SIZE]);  //初始化空闲任务
+	qTaskInit(&qTaskIdle, idleTaskEntry, (void *)0, QMRTOS_PRO_COUNT - 1, idleTaskEnv, QMRTOS_IDLETASK_STACK_SIZE);  //初始化空闲任务
 	idleTask = &qTaskIdle;
 
     nextTask = qTaskHighestReady();   //初始自动查找最高优先级的任务运行

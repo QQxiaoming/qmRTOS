@@ -454,6 +454,11 @@
               <FileType>1</FileType>
               <FilePath>.\Source\qTimer.c</FilePath>
             </File>
+            <File>
+              <FileName>qHooks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\qHooks.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -513,6 +518,11 @@
               <FileName>qTimer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\qTimer.h</FilePath>
+            </File>
+            <File>
+              <FileName>qHooks.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\qHooks.h</FilePath>
             </File>
           </Files>
         </Group>

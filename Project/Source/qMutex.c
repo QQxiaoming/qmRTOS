@@ -14,6 +14,7 @@
 */
 #include "qmRTOS.h"
 
+#if QMRTOS_ENABLE_MUTEX 
 /******************************************************************************
  * 函数名称：互斥锁初始化函数
  * 函数功能：初始化互斥锁
@@ -256,4 +257,5 @@ void qMutexGetInfo(qMutex * mutex, qMutexInfo * info)
     qTaskExitCritical(status);                     //退出临界区
 }
 
+#endif /*QMRTOS_ENABLE_MUTEX*/
 /************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/

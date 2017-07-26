@@ -14,6 +14,7 @@
 */
 #include "qmRTOS.h"
 
+#if QMRTOS_ENABLE_FLAGGROUP 
 /******************************************************************************
  * 函数名称：事件标志组初始化函数
  * 函数功能：初始化事件标志组
@@ -212,4 +213,5 @@ void qFlagGroupGetInfo (qFlagGroup * flagGroup, qFlagGroupInfo * info)
     qTaskExitCritical(status);                 //退出临界区
 }
 
+#endif /*QMRTOS_ENABLE_FLAGGROUP*/
 /************** (C) COPYRIGHT 2014-2018 学生开放实验室 *****END OF FILE*********/
